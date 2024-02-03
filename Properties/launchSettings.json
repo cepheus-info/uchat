@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "UChat (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "UChat (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
