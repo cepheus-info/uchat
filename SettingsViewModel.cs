@@ -33,6 +33,8 @@ namespace UChat
             }
         }
 
+        public string HttpClientName => AcceptInsecureConnection ? "InsecureHttpClient" : "SecureHttpClient";
+
         public int Timeout
         {
             get => (int?)ApplicationData.Current.LocalSettings.Values["Timeout"] ?? 10;

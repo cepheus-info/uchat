@@ -54,8 +54,6 @@ namespace UChat
 
             m_window = new MainWindow();
             m_window.Activate();
-
-            UpdateAcceptInsecureConnection();
         }
 
         private void ConfigureServices(IServiceCollection services)
@@ -73,10 +71,20 @@ namespace UChat
             //    return client;
             //});
             #endregion
-            services.AddHttpClient("MyHttpClient", client =>
+            services.AddHttpClient("SecureHttpClient", client =>
             {
                 int timeout = GetUserTimeoutSetting();
                 client.Timeout = TimeSpan.FromSeconds(timeout);
+            });
+
+            services.AddHttpClient("InsecureHttpClient", client =>
+            {
+                int timeout = GetUserTimeoutSetting();
+                client.Timeout = TimeSpan.FromSeconds(timeout);
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             });
         }
 
@@ -84,20 +92,6 @@ namespace UChat
         {
             var settingsViewModel = ServiceProvider.GetRequiredService<SettingsViewModel>();
             return settingsViewModel.Timeout;
-        }
-
-        private void UpdateAcceptInsecureConnection()
-        {
-            var settingsViewModel = ServiceProvider.GetRequiredService<SettingsViewModel>();
-            if (settingsViewModel.AcceptInsecureConnection)
-            {
-                ServicePointManager.ServerCertificateValidationCallback +=
-                    (sender, cert, chain, sslPolicyErrors) => true;
-            }
-            else
-            {
-                ServicePointManager.ServerCertificateValidationCallback = null;
-            }
         }
 
         private Window m_window;

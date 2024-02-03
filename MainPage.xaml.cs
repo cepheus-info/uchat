@@ -74,7 +74,7 @@ namespace UChat
         {
             // await Task.Delay(1000);
             // return "{\"data\": \"What I asked; What UChat answered " + Random.Shared.Next() + "\"}";
-            using (var client = this.httpClientFactory.CreateClient("MyHttpClient"))
+            using (var client = this.httpClientFactory.CreateClient(SettingsViewModel.HttpClientName))
             {
                 using (var content = new MultipartFormDataContent())
                 {
