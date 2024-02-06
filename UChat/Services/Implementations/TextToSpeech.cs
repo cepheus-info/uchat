@@ -1,0 +1,27 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UChat.Services.Interfaces;
+using Windows.Media.Core;
+using Windows.Media.Playback;
+using Windows.Media.SpeechSynthesis;
+
+namespace UChat.Services.Implementations
+{
+    public class TextToSpeech : ITextToSpeech
+    {
+        private MediaPlayer _mediaPlayer = new MediaPlayer();
+
+        public async Task Speak(string text)
+        {
+            // Use platform-specific TextToSpeech functionality here
+            var synthesizer = new SpeechSynthesizer();
+            var synthesisStream = await synthesizer.SynthesizeSsmlToStreamAsync(text);
+
+            _mediaPlayer.Source = MediaSource.CreateFromStream(synthesisStream, synthesisStream.ContentType);
+            _mediaPlayer.Play();
+        }
+    }
+}

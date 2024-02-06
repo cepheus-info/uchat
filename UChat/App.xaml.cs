@@ -14,6 +14,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices.WindowsRuntime;
+using UChat.Services.Implementations;
+using UChat.Services.Interfaces;
+using UChat.ViewModels;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -30,6 +33,13 @@ namespace UChat
     public partial class App : Application
     {
         public static IServiceProvider ServiceProvider { get; private set; }
+
+#if DEBUG
+        public static void InitializeForTesting(IServiceProvider serviceProvider)
+        {
+            ServiceProvider = serviceProvider;
+        }
+#endif
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -59,18 +69,12 @@ namespace UChat
         private void ConfigureServices(IServiceCollection services)
         {
             // Add services
-            services.AddSingleton<SettingsViewModel>();
-            services.AddSingleton<MainPageViewModel>();
-            #region Use AddTransient HttpClient for simple requirements
-            //services.AddTransient(_ =>
-            //{
-            //    var client = new HttpClient
-            //    {
-            //        Timeout = TimeSpan.FromSeconds(20)
-            //    };
-            //    return client;
-            //});
-            #endregion
+            services.AddSingleton<ISettings, LocalSettings>();
+            services.AddSingleton<IRecordingService, RecordingService>();
+            services.AddSingleton<ITextToSpeech, TextToSpeech>();
+            services.AddSingleton<IAudioPlayer,  AudioPlayer>();
+
+            #region Add IHttpClientFactory
             services.AddHttpClient("SecureHttpClient", client =>
             {
                 int timeout = GetUserTimeoutSetting();
@@ -86,6 +90,13 @@ namespace UChat
             {
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             });
+            #endregion
+
+            // Add ApiService after IHttpClientFactory to get the lastest IHttpClientFactory Settings
+            services.AddSingleton<IApiService, ApiService>();
+
+            services.AddSingleton<SettingsViewModel>();
+            services.AddSingleton<MainPageViewModel>();
         }
 
         private int GetUserTimeoutSetting()
