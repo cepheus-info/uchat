@@ -48,6 +48,15 @@ namespace UChat
         public App()
         {
             this.InitializeComponent();
+
+            // Setup global exception handler
+            this.UnhandledException += OnUnhandledException;
+        }
+
+        private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            // Log or handle the exception
+            throw e.Exception;
         }
 
         /// <summary>

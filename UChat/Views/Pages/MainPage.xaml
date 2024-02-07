@@ -41,7 +41,7 @@
 
         <!-- User input area -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
-            <TextBlock x:Name="RecordingStatus" Text="{Binding RecordingStatus}" Width="400" HorizontalAlignment="Stretch"></TextBlock>
+            <TextBlock x:Name="RecordingStatus" Text="{Binding RecordingStatusText}" Width="400" HorizontalAlignment="Stretch"></TextBlock>
             <Button Content="{Binding RecordButtonText}" Command="{Binding RecordCommand}"/>
             <Button Content="🖉Send" IsEnabled="{Binding CanSend}" Command="{Binding SendCommand}"/>
         </StackPanel>

@@ -16,71 +16,75 @@ using Windows.Storage.Streams;
 
 namespace UChat.ViewModels
 {
+    /// <summary>
+    /// ViewModel for the MainPage. It handles the business logic for recording and sending audio messages.
+    /// </summary>
     public class MainPageViewModel : INotifyPropertyChanged
     {
-        #region StorageFile RecordingFile
-        private StorageFile _recordingFile;
-        public StorageFile RecordingFile { get => _recordingFile; }
-        #endregion
+        private StorageFile recordingFile;
 
         #region bool IsRecordingAvailable
-        private bool _isRecordingAvailable = false;
-        public bool IsRecordingAvailable
+        private bool _isRecordedFileAvailable = false;
+        /// <summary>
+        /// Gets or Sets a value indicating whether a recorded file is available.
+        /// </summary>
+        public bool IsRecordedFileAvailable
         {
-            get => _isRecordingAvailable;
+            get => _isRecordedFileAvailable;
             set
             {
-                _isRecordingAvailable = value;
+                _isRecordedFileAvailable = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(CanSend));
             }
         }
         #endregion
 
-        #region string RecordingStatus
-        private string _recordingStatus = "Idle";
-        public string RecordingStatus
-        {
-            get { return _recordingStatus; }
-            set
-            {
-                _recordingStatus = value;
-                OnPropertyChanged();
-            }
-        }
-        #endregion
 
         #region bool IsRecording
         private bool _isRecording = false;
+        /// <summary>
+        /// Gets or sets a value indicating whether the app is currently recording.
+        /// </summary>
         public bool IsRecording
         {
-            get { return _isRecording; }
+            get => _isRecording;
             set
             {
                 _isRecording = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsRecording));
                 OnPropertyChanged(nameof(RecordButtonText));
+                OnPropertyChanged(nameof(RecordingStatusText));
                 OnPropertyChanged(nameof(CanSend));
             }
         }
         #endregion
 
-        public bool CanSend
-        {
-            get { return !IsRecording && IsRecordingAvailable; }
-        }
+        /// <summary>
+        /// Gets a value indicating whether a message can be sent.
+        /// </summary>
+        public bool CanSend => !IsRecording && IsRecordedFileAvailable;
 
-        public string RecordButtonText
-        {
-            get { return IsRecording ? "⏺ Stop Record" : "🎙Record"; }
-        }
+        /// <summary>
+        /// Gets the text indicating the recording status.
+        /// </summary>
+        public string RecordingStatusText => IsRecording ? "Recording..." : "Idle";
+
+        /// <summary>
+        /// Gets the text for the record button
+        /// </summary>
+        public string RecordButtonText => IsRecording ? "⏺ Stop Record" : "🎙Record";
 
         #region ObservableCollection<string> OperationHistory
         private ObservableCollection<string> _operationHistory = new ObservableCollection<string>();
+
+        /// <summary>
+        /// Gets or sets the operation history.
+        /// </summary>
         public ObservableCollection<string> OperationHistory
         {
-            get { return this._operationHistory; }
+            get => this._operationHistory;
             set
             {
                 this._operationHistory = value;
@@ -89,6 +93,9 @@ namespace UChat.ViewModels
         }
         #endregion
 
+        /// <summary>
+        /// Gets the collection of messages.
+        /// </summary>
         public ObservableCollection<Message> Messages { get; } = new ObservableCollection<Message>();
 
         private readonly IRecordingService _recordingService;
@@ -96,8 +103,19 @@ namespace UChat.ViewModels
         private readonly ITextToSpeech _textToSpeech;
         private readonly IAudioPlayer _audioPlayer;
 
+        /// <summary>
+        /// Gets the command for recording.
+        /// </summary>
         public ICommand RecordCommand { get; }
+
+        /// <summary>
+        /// Gets the command for sending a message.
+        /// </summary>
         public ICommand SendCommand { get; }
+
+        /// <summary>
+        /// Gets the command for playing audio.
+        /// </summary>
         public ICommand PlayAudioCommand { get; }
 
         public MainPageViewModel(
@@ -108,7 +126,7 @@ namespace UChat.ViewModels
         {
             #region RecordCommand
             _recordingService = recordingService;
-            RecordCommand = new RelayCommand(async () => await RecordAsync());
+            RecordCommand = new RelayCommand(async () => await ToggleRecordingAsync());
             #endregion
 
             #region SendCommand
@@ -123,62 +141,112 @@ namespace UChat.ViewModels
             #endregion
         }
 
-        public async Task RecordAsync()
+        /// <summary>
+        /// Toggles between starting and stopping the recording.
+        /// </summary>
+        /// <returns></returns>
+        public async Task ToggleRecordingAsync()
         {
-            if (!IsRecording)
+            if (IsRecording)
             {
-                RecordingStatus = "Recording...";
-                OperationHistory.Add("Starting recording...");
-                _recordingFile = await _recordingService.CreateRecordingFileAsync("Recording.mp3");
-                await _recordingService.StartRecordingAsync(_recordingFile);
-                IsRecording = true;
+                await StopRecordingAsync();
             }
             else
             {
-                RecordingStatus = "Idle";
-                await _recordingService.StopRecordingAsync();
-                var duration = await _recordingService.GetRecordingDurationAsync(_recordingFile);
-                OperationHistory.Add($"You have recorded a {duration.TotalSeconds}s message at {_recordingFile.Path}");
-                Messages.Add(new Message
-                {
-                    Sender = "[Me]",
-                    Content = "",
-                    Audio = _recordingFile
-                });
-                IsRecording = false;
-                IsRecordingAvailable = true;
+                await StartRecordingAsync();
             }
         }
 
+        private async Task StartRecordingAsync()
+        {
+            OperationHistory.Add("Starting recording...");
+            recordingFile = await _recordingService.CreateRecordingFileAsync("Recording.mp3");
+            await _recordingService.StartRecordingAsync(recordingFile);
+            IsRecording = true;
+        }
+
+        private async Task StopRecordingAsync()
+        {
+            await _recordingService.StopRecordingAsync();
+            var duration = await _recordingService.GetRecordingDurationAsync(recordingFile);
+            OperationHistory.Add($"You have recorded a {duration.TotalSeconds}s message at {recordingFile.Path}");
+            Messages.Add(new Message
+            {
+                Sender = "[Me]",
+                Content = "",
+                Audio = recordingFile
+            });
+            IsRecording = false;
+            IsRecordedFileAvailable = true;
+        }
+
+        /// <summary>
+        /// Sends the audio message and handles the response.
+        /// </summary>
+        /// <returns></returns>
         public async Task SendMessageAsync()
         {
             OperationHistory.Add("Sending message...");
 
             try
             {
-                IBuffer buffer = await FileIO.ReadBufferAsync(RecordingFile);
-                string responseJson = await _apiService.SendRequestAsync(buffer, RecordingFile.Name);
+                IsRecordedFileAvailable = false;
+                var audioMessage = Messages.Last();
+                var responseString = await SendAudioAsync(audioMessage);
+                OperationHistory.Add($"Received Message: {responseString}");
 
-                string[] messages = responseJson.Split(';');
+                var responseMessages = ParseResponse(responseString);
 
-                OperationHistory.Add($"Received Message: {responseJson}");
+                ReplaceMessageInList(audioMessage, responseMessages);
 
-                Message tmpMessage = Messages.Last();
-                Messages.Remove(tmpMessage);
-                Messages.Add(new Message { Sender = tmpMessage.Sender, Audio = tmpMessage.Audio, Content = messages[0].Trim() });
-                Messages.Add(new Message { Sender = "[UChat]", Content = messages[1].Trim() });
-
-                IsRecordingAvailable = false;
-
-                await _textToSpeech.Speak(messages[1].Trim());
+                await SpeakResponseAsync(responseMessages.Last());
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.ToString());
                 OperationHistory.Add(ex.ToString());
+                IsRecordedFileAvailable = true;
             }
         }
 
+        private async Task<string> SendAudioAsync(Message audioMessage)
+        {
+            var buffer = await FileIO.ReadBufferAsync(audioMessage.Audio);
+            return await _apiService.SendRequestAsync(buffer, audioMessage.Audio.Name);
+        }
+
+        private List<Message> ParseResponse(string responseString)
+        {
+            var parts = responseString.Split(';');
+            return new List<Message>
+            {
+                new Message { Sender = "[Me]", Content = parts[0] },
+                new Message { Sender = "[UChat]", Content = parts[1] }
+            };
+        }
+
+        private void ReplaceMessageInList(Message originalMessage, List<Message> responseMessages)
+        {
+            var index = Messages.IndexOf(originalMessage);
+            if (index != -1)
+            {
+                var requestMessage = responseMessages[0];
+                requestMessage.Audio = originalMessage.Audio;
+                Messages[index] = requestMessage;
+                Messages.Insert(index + 1, responseMessages[1]);
+            }
+        }
+
+        private async Task SpeakResponseAsync(Message responseMessage)
+        {
+            await _textToSpeech.Speak(responseMessage.Content);
+        }
+
+        /// <summary>
+        /// Plays the audio of the message or speaks the message if there is no audio.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public async Task PlayAudioAsync(Message message)
         {
             if (message.Audio == null)
@@ -202,6 +270,10 @@ namespace UChat.ViewModels
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// Raises the PropertyChanged event.
+        /// </summary>
+        /// <param name="propertyName">The name of the property that changed.</param>
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
