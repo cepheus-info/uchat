@@ -257,8 +257,13 @@ namespace UChat.ViewModels
             {
                 if (!message.IsPlaying)
                 {
-                    await _audioPlayer.PlayAudioAsync(message.Audio);
                     message.IsPlaying = true;
+                    await _audioPlayer.PlayAudioAsync(message.Audio);
+                    // This is clever but needs the knowledge of Reactive-Programming,
+                    // which construct the PlayAudioAsync to only return after finished playing.
+                    // Otherwise, you'll need to register an event handler in this ViewModel, and assign the message.IsPlaying = false in the handler,
+                    // which involves another problem of how the message should be tracked in that context.
+                    message.IsPlaying = false;
                 }
                 else
                 {
