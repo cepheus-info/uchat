@@ -24,10 +24,13 @@ namespace UChat
     /// </summary>
     public sealed partial class MainWindow : Window
     {
+        public static MainWindow Instance { get; private set; }
+
         public MainWindow()
         {
             this.InitializeComponent();
             this.ContentFrame.Navigate(typeof(MainPage));
+            Instance = this;
         }
 
         public void SettingsButton_Click(object sender, RoutedEventArgs e)

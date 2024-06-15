@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -50,6 +51,61 @@ namespace UChat
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
         {
             base.OnNavigatingFrom(e);
+        }
+
+        private void Border_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            // Capture the pointer to ensure you continue receiving pointer events even if the pointer moves outside the Border
+            (sender as UIElement)?.CapturePointer(e.Pointer);
+            MainPageViewModel.IsCancelAction = false; // Reset the flag
+            // Start recording action
+            var dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+            dispatcherQueue.TryEnqueue(async () =>
+            {
+                await MainPageViewModel.StartRecordingCommand.ExecuteAsync(null);
+            });
+        }
+
+        private void Border_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            (sender as UIElement)?.ReleasePointerCapture(e.Pointer);
+            var dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+            dispatcherQueue.TryEnqueue(async () =>
+            {
+                if (MainPageViewModel.IsCancelAction)
+                {
+                    // Cancel recording action
+                    await MainPageViewModel.CancelRecordingCommand.ExecuteAsync(null);
+                }
+                else
+                {
+                    await MainPageViewModel.StopRecordingCommand.ExecuteAsync(null);
+                    await MainPageViewModel.SendCommand.ExecuteAsync(null);
+                }
+            });
+        }
+
+        private void Border_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+
+        }
+
+        private void Border_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+
+        }
+
+        private void RecordBorder_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            // Assuming you have logic here to determine if the pointer is in the cancel area
+            // Check if the pointer is within the special area (e.g., over the CancelButton)
+            var position = e.GetCurrentPoint(null).Position;
+            
+            var cancelBtnPosition = CancelButton.TransformToVisual(MainWindow.Instance.Content).TransformPoint(new Point(0, 0));
+            var cancelBtnRect = new Rect(cancelBtnPosition, new Size(CancelButton.ActualWidth, CancelButton.ActualHeight));
+
+            /* Determine if in cancel area */
+            MainPageViewModel.IsCancelAction = cancelBtnRect.Contains(position);
         }
     }
 }

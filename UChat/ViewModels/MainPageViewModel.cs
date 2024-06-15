@@ -55,9 +55,30 @@ namespace UChat.ViewModels
                 _isRecording = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsRecording));
-                OnPropertyChanged(nameof(RecordButtonText));
+                OnPropertyChanged(nameof(RecordButtonImage));
                 OnPropertyChanged(nameof(RecordingStatusText));
                 OnPropertyChanged(nameof(CanSend));
+            }
+        }
+        #endregion
+
+        #region bool IsCancelAction
+        private bool _isCancelAction = false;
+        /// <summary>
+        /// Gets or sets a value indicating whether the current action is intended to be canceled.
+        /// </summary>
+        public bool IsCancelAction
+        {
+            get => _isCancelAction;
+            set
+            {
+                if (_isCancelAction != value)
+                {
+                    _isCancelAction = value;
+                    OnPropertyChanged();
+                    // You can also trigger other property changes if needed
+                    OnPropertyChanged(nameof(RecordingStatusText));
+                }
             }
         }
         #endregion
@@ -70,12 +91,20 @@ namespace UChat.ViewModels
         /// <summary>
         /// Gets the text indicating the recording status.
         /// </summary>
-        public string RecordingStatusText => IsRecording ? "Recording..." : "Idle";
+        public string RecordingStatusText
+        {
+            get
+            {
+                return IsRecording 
+                    ? (IsCancelAction ? "ms-appx:///Assets/ReleaseToCancel.png" : "ms-appx:///Assets/ReleaseToSend.png")
+                    : "ms-appx:///Assets/PressToRecord.png";
+            }
+        }
 
         /// <summary>
-        /// Gets the text for the record button
+        /// Gets the image for the record button
         /// </summary>
-        public string RecordButtonText => IsRecording ? "⏺ Stop Record" : "🎙Record";
+        public string RecordButtonImage => IsRecording ? "ms-appx:///Assets/RecordButtonPressed.png" : "ms-appx:///Assets/RecordButton.png";
 
         #region ObservableCollection<string> OperationHistory
         private ObservableCollection<string> _operationHistory = new ObservableCollection<string>();
@@ -108,17 +137,27 @@ namespace UChat.ViewModels
         /// <summary>
         /// Gets the command for recording.
         /// </summary>
-        public ICommand RecordCommand { get; }
+        public IAsyncRelayCommand StartRecordingCommand { get; }
+
+        /// <summary>
+        /// Gets the command for stopping the recording.
+        /// </summary>
+        public IAsyncRelayCommand StopRecordingCommand { get; }
+
+        /// <summary>
+        /// Cancel the recording.
+        /// </summary>
+        public IAsyncRelayCommand CancelRecordingCommand { get; }
 
         /// <summary>
         /// Gets the command for sending a message.
         /// </summary>
-        public ICommand SendCommand { get; }
+        public IAsyncRelayCommand SendCommand { get; }
 
         /// <summary>
         /// Gets the command for playing audio.
         /// </summary>
-        public ICommand PlayAudioCommand { get; }
+        public IAsyncRelayCommand PlayAudioCommand { get; }
 
         public MainPageViewModel(
             ISettings settings,
@@ -128,38 +167,30 @@ namespace UChat.ViewModels
             IAudioPlayer audioPlayer)
         {
             _settings = settings;
-
-            #region RecordCommand
             _recordingService = recordingService;
-            RecordCommand = new RelayCommand(async () => await ToggleRecordingAsync());
+
+            #region StartRecordingCommand
+            StartRecordingCommand = new AsyncRelayCommand(async () => await StartRecordingAsync());
+            #endregion
+
+            #region StopRecordingCommand
+            StopRecordingCommand = new AsyncRelayCommand(async () => await StopRecordingAsync());
+            #endregion
+
+            #region CancelRecordingCommand
+            CancelRecordingCommand = new AsyncRelayCommand(async () => await CancelRecordingAsync());
             #endregion
 
             #region SendCommand
-            SendCommand = new RelayCommand(async () => await SendMessageAsync());
+            SendCommand = new AsyncRelayCommand(async () => await SendMessageAsync());
             _apiService = apiService;
             _textToSpeech = textToSpeech;
             #endregion
 
             #region PlayAudioCommand
-            PlayAudioCommand = new RelayCommand<Message>(async (message) => await PlayAudioAsync(message));
+            PlayAudioCommand = new AsyncRelayCommand<Message>(async (message) => await PlayAudioAsync(message));
             _audioPlayer = audioPlayer;
             #endregion
-        }
-
-        /// <summary>
-        /// Toggles between starting and stopping the recording.
-        /// </summary>
-        /// <returns></returns>
-        public async Task ToggleRecordingAsync()
-        {
-            if (IsRecording)
-            {
-                await StopRecordingAsync();
-            }
-            else
-            {
-                await StartRecordingAsync();
-            }
         }
 
         private async Task StartRecordingAsync()
@@ -183,6 +214,17 @@ namespace UChat.ViewModels
             });
             IsRecording = false;
             IsRecordedFileAvailable = true;
+            IsCancelAction = false;
+        }
+
+        private async Task CancelRecordingAsync()
+        {
+            OperationHistory.Add("Cancel recording.");
+            await _recordingService.StopRecordingAsync();
+            await recordingFile.DeleteAsync();
+            IsRecording = false;
+            IsRecordedFileAvailable = false;
+            IsCancelAction = false;
         }
 
         /// <summary>

@@ -8,14 +8,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" d:DataContext="{d:DesignInstance Type=viewModels:MainPageViewModel}"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    Background="{StaticResource AppBackground}"
     x:Name="UMainPage">
     <Page.Resources>
         <local:SenderToColorConverter x:Key="SenderToColorConverter"/>
+        <local:BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="2*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -41,13 +43,34 @@
 
         <!-- User input area -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
-            <TextBlock x:Name="RecordingStatus" Text="{Binding RecordingStatusText}" Width="400" HorizontalAlignment="Stretch"></TextBlock>
-            <Button Content="{Binding RecordButtonText}" Command="{Binding RecordCommand}"/>
-            <Button Content="🖉Send" IsEnabled="{Binding CanSend}" Command="{Binding SendCommand}"/>
+            <Image Width="180" Source="{Binding RecordingStatusText}" HorizontalAlignment="Stretch"></Image>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+            <!--<TextBlock x:Name="RecordingStatus" Text="{Binding RecordingStatusText}" Width="400" HorizontalAlignment="Stretch"></TextBlock>-->
+            <Button HorizontalAlignment="Left" x:Name="CancelButton" Visibility="{Binding IsRecording, Converter={StaticResource BoolToVis}}">
+                <Image Width="60" Height="60" Source="ms-appx:///Assets/CancelButton.png"></Image>
+            </Button>
+            <Border HorizontalAlignment="Center" x:Name="RecordBorder" Background="Transparent" 
+                PointerPressed="Border_PointerPressed" 
+                PointerReleased="Border_PointerReleased" 
+                PointerExited="Border_PointerExited"
+                PointerEntered="Border_PointerEntered"
+                PointerMoved="RecordBorder_PointerMoved"
+                CornerRadius="50" 
+                BorderBrush="Gray" 
+                BorderThickness="1">
+                <Image Width="100" Height="100" Source="{Binding RecordButtonImage}" />
+            </Border>
+            <!--<Button Background="Transparent"
+                    PointerPressed="Button_PointerPressed"
+                    PointerReleased="Button_PointerReleased">
+                <Image Width="100" Height="100" Source="{Binding RecordButtonImage}" />
+            </Button>-->
+            <!--<Button Content="🖉Send" IsEnabled="{Binding CanSend}" Command="{Binding SendCommand}"/>-->
         </StackPanel>
 
         <!-- Operation history list -->
-        <ScrollViewer Grid.Row="2" MaxWidth="600">
+        <ScrollViewer Grid.Row="3" MaxWidth="600">
             <ListView ItemsSource="{Binding OperationHistory}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <ListView.ItemTemplate>
                     <DataTemplate>
