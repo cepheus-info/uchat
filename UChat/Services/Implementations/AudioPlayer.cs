@@ -12,7 +12,7 @@ namespace UChat.Services.Implementations
 {
     public class AudioPlayer : IAudioPlayer
     {
-        private MediaPlayer _mediaPlayer = new MediaPlayer();
+        private MediaPlayer _mediaPlayer = new();
 
         private TaskCompletionSource<bool> _playTaskCompletionSource;
 

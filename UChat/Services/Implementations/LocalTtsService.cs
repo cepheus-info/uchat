@@ -10,7 +10,7 @@ namespace UChat.Services.Implementations
     [TextToSpeech(tag: "LocalTTS")]
     public class LocalTtsService : ITextToSpeech
     {
-        private MediaPlayer _mediaPlayer = new MediaPlayer();
+        private MediaPlayer _mediaPlayer = new();
 
         public async Task Speak(string text)
         {

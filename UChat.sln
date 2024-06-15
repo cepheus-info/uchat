@@ -5,7 +5,7 @@ VisualStudioVersion = 17.8.34322.80
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UChat", "UChat\UChat.csproj", "{9401BCC7-5778-4DE7-9AFE-5BAF49D84864}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UChatTests", "UChatTests\UChatTests.csproj", "{CFB95615-1E72-40CD-87A4-B26DC21EE77F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UChatTests", "UChatTests\UChatTests.csproj", "{CFB95615-1E72-40CD-87A4-B26DC21EE77F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

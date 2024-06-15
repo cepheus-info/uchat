@@ -18,7 +18,7 @@ namespace UChat.Services.Implementations
         private readonly ISettings _settings;
         private readonly MediaPlayer _mediaPlayer = new();
 
-        public OpenTtsService(IHttpClientFactory httpClientFactory, ISettings settings, MediaPlayer mediaPlayer)
+        public OpenTtsService(IHttpClientFactory httpClientFactory, ISettings settings)
         {
             _httpClientFactory = httpClientFactory;
             _settings = settings;
