@@ -40,6 +40,16 @@ namespace UChat.ViewModels
             }
         }
 
+        public string TextToSpeechImplementation
+        {
+            get => _settings.TextToSpeechImplementation;
+            set
+            {
+                _settings.TextToSpeechImplementation = value;
+                OnPropertyChanged(nameof(TextToSpeechImplementation));
+            }
+        }
+
         public int Timeout
         {
             get => _settings.Timeout;

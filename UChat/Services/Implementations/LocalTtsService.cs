@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using UChat.Services.Interfaces;
 using Windows.Media.Core;
@@ -10,7 +7,8 @@ using Windows.Media.SpeechSynthesis;
 
 namespace UChat.Services.Implementations
 {
-    public class TextToSpeech : ITextToSpeech
+    [TextToSpeech(tag: "LocalTTS")]
+    public class LocalTtsService : ITextToSpeech
     {
         private MediaPlayer _mediaPlayer = new MediaPlayer();
 

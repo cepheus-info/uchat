@@ -13,6 +13,7 @@ using UChat.Services.Interfaces;
 using UChat.Models;
 using Windows.Storage;
 using Windows.Storage.Streams;
+using UChat.Services;
 
 namespace UChat.ViewModels
 {
@@ -98,9 +99,10 @@ namespace UChat.ViewModels
         /// </summary>
         public ObservableCollection<Message> Messages { get; } = new ObservableCollection<Message>();
 
+        private readonly ISettings _settings;
         private readonly IRecordingService _recordingService;
         private readonly IApiService _apiService;
-        private readonly ITextToSpeech _textToSpeech;
+        private readonly TextToSpeechContext _textToSpeech;
         private readonly IAudioPlayer _audioPlayer;
 
         /// <summary>
@@ -119,11 +121,14 @@ namespace UChat.ViewModels
         public ICommand PlayAudioCommand { get; }
 
         public MainPageViewModel(
+            ISettings settings,
             IRecordingService recordingService,
             IApiService apiService,
-            ITextToSpeech textToSpeech,
+            TextToSpeechContext textToSpeech,
             IAudioPlayer audioPlayer)
         {
+            _settings = settings;
+
             #region RecordCommand
             _recordingService = recordingService;
             RecordCommand = new RelayCommand(async () => await ToggleRecordingAsync());
@@ -239,7 +244,7 @@ namespace UChat.ViewModels
 
         private async Task SpeakResponseAsync(Message responseMessage)
         {
-            await _textToSpeech.Speak(responseMessage.Content);
+            await _textToSpeech.GetService().Speak(responseMessage.Content);
         }
 
         /// <summary>
@@ -251,7 +256,7 @@ namespace UChat.ViewModels
         {
             if (message.Audio == null)
             {
-                await _textToSpeech.Speak(message.Content);
+                await _textToSpeech.GetService().Speak(message.Content);
             }
             else
             {

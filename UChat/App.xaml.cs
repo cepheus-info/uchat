@@ -14,6 +14,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices.WindowsRuntime;
+using UChat.Services;
 using UChat.Services.Implementations;
 using UChat.Services.Interfaces;
 using UChat.ViewModels;
@@ -80,7 +81,16 @@ namespace UChat
             // Add services
             services.AddSingleton<ISettings, LocalSettings>();
             services.AddSingleton<IRecordingService, RecordingService>();
-            services.AddSingleton<ITextToSpeech, TextToSpeech>();
+
+            #region Add TextToSpeech services
+            AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(x => x.GetTypes())
+                .Where(x => typeof(ITextToSpeech).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
+                .ToList()
+                .ForEach(x => services.AddTransient(typeof(ITextToSpeech), x));
+            services.AddSingleton<TextToSpeechContext>();
+            #endregion
+
             services.AddSingleton<IAudioPlayer,  AudioPlayer>();
 
             #region Add IHttpClientFactory

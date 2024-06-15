@@ -14,6 +14,8 @@ namespace UChat.Services.Interfaces
 
         int Timeout { get; set; }
 
+        string TextToSpeechImplementation { get; set; }
+
         string HttpClientName { get; }
     }
 }

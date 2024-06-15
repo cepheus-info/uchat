@@ -29,6 +29,12 @@ namespace UChat.Services.Implementations
             set => ApplicationData.Current.LocalSettings.Values["Timeout"] = value;
         }
 
+        public string TextToSpeechImplementation
+        {
+            get => (string)ApplicationData.Current.LocalSettings.Values["TextToSpeechImplementation"] ?? "LocalTTS";
+            set => ApplicationData.Current.LocalSettings.Values["TextToSpeechImplementation"] = value;
+        }
+
         public string HttpClientName { get => AcceptInsecureConnection ? "InsecureHttpClient" : "SecureHttpClient"; }
     }
 }
