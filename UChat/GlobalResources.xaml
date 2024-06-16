@@ -4,5 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:UChat">
     <ImageBrush x:Key="AppBackground" ImageSource="Assets/BackgroundImage.png" Stretch="UniformToFill" />
-    <ImageBrush x:Key="ButtonRecordBackground" ImageSource="Assets/RecordButton.png" Stretch="UniformToFill" />
+    <ImageBrush x:Key="TopBarBackground" ImageSource="Assets/TopBarBackground.png" Stretch="UniformToFill" />
+    <ImageBrush x:Key="RecordButton" ImageSource="Assets/RecordButton.png" Stretch="UniformToFill" />
+    <ImageBrush x:Key="RecordButtonBackground" ImageSource="Assets/RecordButtonRecordingBackground.png" Stretch="UniformToFill" />
 </ResourceDictionary>

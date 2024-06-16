@@ -9,13 +9,23 @@
     mc:Ignorable="d"
     x:Name="UMainWindow"
     >
-    <Grid>
+    <Grid Background="{StaticResource AppBackground}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <CommandBar Grid.Row="0">
+        <!--<CommandBar Grid.Row="0" Background="Transparent">
+            <AppBarElementContainer VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="联合电子智能语音助手" FontSize="20" VerticalAlignment="Center"/>
+            </AppBarElementContainer>
+            <AppBarButton Icon="Setting" Label="Settings" Click="SettingsButton_Click"/>
+        </CommandBar>-->
+
+        <CommandBar Grid.Row="0" Background="{StaticResource TopBarBackground}" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+            <CommandBar.Content>
+                <TextBlock Margin="530, 10" Text="联合电子智能语音助手" Foreground="GhostWhite" FontWeight="Black" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </CommandBar.Content>
             <AppBarButton Icon="Setting" Label="Settings" Click="SettingsButton_Click"/>
         </CommandBar>
 
