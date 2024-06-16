@@ -9,12 +9,25 @@ namespace UChat.Services.Interfaces
 {
     public interface IRecordingService
     {
-        Task<StorageFile> CreateRecordingFileAsync(string filename);
+        // Add the AudioDataStream property signature
+        IObservable<float[]> AudioDataStream { get; }
 
-        Task StartRecordingAsync(StorageFile file);
+        StorageFile RecordingFile { get; }
+
+        Task InitializeRecordingAsync(string filename);
+
+        Task StartRecordingAsync();
 
         Task StopRecordingAsync();
 
-        Task<TimeSpan> GetRecordingDurationAsync(StorageFile file);
+        public async Task<TimeSpan> GetRecordingDurationAsync()
+        {
+            if (RecordingFile == null)
+            {
+                throw new InvalidOperationException("Recording file must be initialized first.");
+            }
+            var properties = await RecordingFile.Properties.GetMusicPropertiesAsync();
+            return properties.Duration;
+        }
     }
 }

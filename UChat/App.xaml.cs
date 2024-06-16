@@ -82,7 +82,7 @@ namespace UChat
         {
             // Add services
             services.AddSingleton<ISettings, LocalSettings>();
-            services.AddSingleton<IRecordingService, RecordingService>();
+            services.AddSingleton<IRecordingService, AudioGraphRecordingService>();
 
             #region Add TextToSpeech services
             AppDomain.CurrentDomain.GetAssemblies()

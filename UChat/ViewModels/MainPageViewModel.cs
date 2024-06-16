@@ -14,6 +14,8 @@ using UChat.Models;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using UChat.Services;
+using System.Reactive.Linq;
+using System.Threading;
 
 namespace UChat.ViewModels
 {
@@ -22,8 +24,6 @@ namespace UChat.ViewModels
     /// </summary>
     public class MainPageViewModel : INotifyPropertyChanged
     {
-        private StorageFile recordingFile;
-
         #region bool IsRecordingAvailable
         private bool _isRecordedFileAvailable = false;
         /// <summary>
@@ -114,6 +114,19 @@ namespace UChat.ViewModels
         /// </summary>
         public string RecordButtonImage => IsRecording ? "ms-appx:///Assets/RecordButtonPressed.png" : "ms-appx:///Assets/RecordButton.png";
 
+        #region Visualize the audio waveform
+        private ObservableCollection<WaveformPoint> _waveformPoints = new();
+        public ObservableCollection<WaveformPoint> WaveformPoints
+        {
+            get => _waveformPoints;
+            set
+            {
+                _waveformPoints = value;
+                OnPropertyChanged(nameof(WaveformPoints));
+            }
+        }
+        #endregion
+
         #region ObservableCollection<string> OperationHistory
         private ObservableCollection<string> _operationHistory = new ObservableCollection<string>();
 
@@ -138,6 +151,7 @@ namespace UChat.ViewModels
 
         private readonly ISettings _settings;
         private readonly IRecordingService _recordingService;
+        private IDisposable _audioDataStreamSubscription;
         private readonly IApiService _apiService;
         private readonly TextToSpeechContext _textToSpeech;
         private readonly IAudioPlayer _audioPlayer;
@@ -203,33 +217,89 @@ namespace UChat.ViewModels
 
         private async Task StartRecordingAsync()
         {
+            #region Subscribe to the AudioDataStream
+            // Subscribe to the audio data stream
+            _audioDataStreamSubscription = _recordingService.AudioDataStream
+                .Sample(TimeSpan.FromMilliseconds(100)) // Example of backpressure, adjust as needed
+                .ObserveOn(SynchronizationContext.Current)
+                .Subscribe(audioData =>
+                {
+                    // Update the UI based on audioData, e.g., visualize the audio waveform
+                    VisualizeAudioData(audioData);
+                });
+            #endregion
+
             OperationHistory.Add("Starting recording...");
-            recordingFile = await _recordingService.CreateRecordingFileAsync("Recording.mp3");
-            await _recordingService.StartRecordingAsync(recordingFile);
+            await _recordingService.InitializeRecordingAsync("Recording.mp3");
+            await _recordingService.StartRecordingAsync();
             IsRecording = true;
         }
+
+        private void VisualizeAudioData(float[] audioData)
+        {
+            if(audioData.Length == 0)
+            {
+                return;
+            }
+
+            // Example: Normalize and add audio data points to WaveformPoints
+            // Clear the existing points
+            WaveformPoints.Clear();
+
+            int targetPointCount = 50;
+            // Calculate the number of audio samples to group together for each point
+            int sampleInterval = (int)Math.Ceiling((double)audioData.Length / targetPointCount);
+
+            double maxSampleValue = audioData.Max(Math.Abs);
+
+            for (int i = 0; i < targetPointCount; i++)
+            {
+                // Calculate the start index of the current group of samples
+                int startIndex = i * sampleInterval;
+                // Ensure we don't exceed the bounds of the audioData array
+                int endIndex = Math.Min(startIndex + sampleInterval, audioData.Length);
+
+                // Calculate the average or peak value of the current group of samples
+                double sampleValue = 0;
+                for (int j = startIndex; j < endIndex; j++)
+                {
+                    sampleValue += Math.Abs(audioData[j]);
+                }
+                sampleValue /= (endIndex - startIndex);
+
+                // Normalize the sample value to fit the visualization range
+                double normalizedSample = (sampleValue / maxSampleValue) * 100;
+
+                // Add the normalized sample to the collection
+                WaveformPoints.Add(new WaveformPoint(normalizedSample, i * (100.0 / targetPointCount)));
+            }
+        }
+
 
         private async Task StopRecordingAsync()
         {
             await _recordingService.StopRecordingAsync();
-            var duration = await _recordingService.GetRecordingDurationAsync(recordingFile);
-            OperationHistory.Add($"You have recorded a {duration.TotalSeconds}s message at {recordingFile.Path}");
+            var duration = await _recordingService.GetRecordingDurationAsync();
+            OperationHistory.Add($"You have recorded a {duration.TotalSeconds}s message at {_recordingService.RecordingFile?.Path}");
             Messages.Add(new Message
             {
                 Sender = "[Me]",
                 Content = "",
-                Audio = recordingFile
+                Audio = _recordingService.RecordingFile
             });
             IsRecording = false;
             IsRecordedFileAvailable = true;
             IsCancelAction = false;
+
+            // Dispose of the subscription when recording stops
+            _audioDataStreamSubscription?.Dispose();
         }
 
         private async Task CancelRecordingAsync()
         {
             OperationHistory.Add("Cancel recording.");
             await _recordingService.StopRecordingAsync();
-            await recordingFile.DeleteAsync();
+            await _recordingService.RecordingFile?.DeleteAsync();
             IsRecording = false;
             IsRecordedFileAvailable = false;
             IsCancelAction = false;

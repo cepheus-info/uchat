@@ -14,6 +14,7 @@
         <local:SenderToColorConverter x:Key="SenderToColorConverter"/>
         <local:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <local:SenderToHorizontalAlignmentConverter x:Key="SenderToHorizontalAlignmentConverter"/>
+        <local:IndexToCanvasLeftConverter x:Key="IndexToCanvasLeftConverter"/>
     </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -25,21 +26,6 @@
 
         <!-- Chat message list -->
         <ScrollViewer Grid.Row="0">
-            <!--<ListView x:Name="MessageList" ItemsSource="{Binding Messages}">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Background="{Binding Sender, Converter={StaticResource SenderToColorConverter}}">
-                            <TextBlock Text="{Binding Sender}" FontWeight="Bold" Margin="0,0,10,0"/>
-                            <TextBlock Text="{Binding Content}"/>
-                            <Button Content="{Binding IsPlayingButtonText}"
-                                    Command="{Binding DataContext.PlayAudioCommand, ElementName=UMainPage}"
-                                    CommandParameter="{Binding}"
-                                    Tag="{Binding}"></Button>
-                            <ProgressBar x:Name="ProgressBar" Width="100" Height="10" Visibility="Collapsed" Maximum="1" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>-->
             <ListView x:Name="MessageList" ItemsSource="{Binding Messages}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -64,7 +50,21 @@
 
         <!-- User input area -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
-            <Image Width="180" Height="100" Source="ms-appx:///Assets/ReleaseToSend.png" Visibility="{Binding IsReleaseToSendVisible, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Stretch"></Image>
+            <Image Width="180" Height="100" Source="ms-appx:///Assets/ReleaseToSend.png" Visibility="{Binding IsReleaseToSendVisible, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Stretch"/>
+            <ItemsControl ItemsSource="{Binding WaveformPoints}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas Width="400" Height="100"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Rectangle Width="1" Fill="Green" 
+                       Height="{Binding Height}" 
+                       Canvas.Left="{Binding CanvasLeft}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
