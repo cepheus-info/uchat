@@ -16,7 +16,7 @@ namespace UChat.Services.Implementations
         {
             // Use platform-specific TextToSpeech functionality here
             var synthesizer = new SpeechSynthesizer();
-            var synthesisStream = await synthesizer.SynthesizeSsmlToStreamAsync(text);
+            var synthesisStream = await synthesizer.SynthesizeTextToStreamAsync(text);
 
             _mediaPlayer.Source = MediaSource.CreateFromStream(synthesisStream, synthesisStream.ContentType);
             _mediaPlayer.Play();

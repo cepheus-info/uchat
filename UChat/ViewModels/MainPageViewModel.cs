@@ -55,11 +55,20 @@ namespace UChat.ViewModels
                 _isRecording = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsRecording));
+                OnPropertyChanged(nameof(IsNotRecording));
                 OnPropertyChanged(nameof(RecordButtonImage));
-                OnPropertyChanged(nameof(RecordingStatusText));
+                OnPropertyChanged(nameof(IsReleaseToSendVisible));
+                OnPropertyChanged(nameof(IsReleaseToCancelVisible));
                 OnPropertyChanged(nameof(CanSend));
             }
         }
+        #endregion
+
+        #region bool IsNotRecording
+        /// <summary>
+        /// Gets a value indicating whether the app is not currently recording.
+        /// </summary>
+        public bool IsNotRecording => !IsRecording;
         #endregion
 
         #region bool IsCancelAction
@@ -76,8 +85,10 @@ namespace UChat.ViewModels
                 {
                     _isCancelAction = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsCancelAction));
                     // You can also trigger other property changes if needed
-                    OnPropertyChanged(nameof(RecordingStatusText));
+                    OnPropertyChanged(nameof(IsReleaseToSendVisible));
+                    OnPropertyChanged(nameof(IsReleaseToCancelVisible));
                 }
             }
         }
@@ -89,17 +100,14 @@ namespace UChat.ViewModels
         public bool CanSend => !IsRecording && IsRecordedFileAvailable;
 
         /// <summary>
-        /// Gets the text indicating the recording status.
+        /// ReleaseToSend is Visible
         /// </summary>
-        public string RecordingStatusText
-        {
-            get
-            {
-                return IsRecording 
-                    ? (IsCancelAction ? "ms-appx:///Assets/ReleaseToCancel.png" : "ms-appx:///Assets/ReleaseToSend.png")
-                    : "ms-appx:///Assets/PressToRecord.png";
-            }
-        }
+        public bool IsReleaseToSendVisible => IsRecording && !IsCancelAction;
+
+        /// <summary>
+        /// ReleaseToCancel is Visible
+        /// </summary>
+        public bool IsReleaseToCancelVisible => IsRecording && IsCancelAction;
 
         /// <summary>
         /// Gets the image for the record button

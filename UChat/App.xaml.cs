@@ -57,7 +57,9 @@ namespace UChat
         private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             // Log or handle the exception
-            throw e.Exception;
+            //throw e.Exception;
+            e.Handled = true;
+            System.Diagnostics.Debug.WriteLine(e.Exception, "Error");
         }
 
         /// <summary>
@@ -91,7 +93,7 @@ namespace UChat
             services.AddSingleton<TextToSpeechContext>();
             #endregion
 
-            services.AddSingleton<IAudioPlayer,  AudioPlayer>();
+            services.AddSingleton<IAudioPlayer, AudioPlayer>();
 
             #region Add IHttpClientFactory
             services.AddHttpClient("SecureHttpClient", client =>
@@ -112,7 +114,11 @@ namespace UChat
             #endregion
 
             // Add ApiService after IHttpClientFactory to get the lastest IHttpClientFactory Settings
+#if DEBUG
+            services.AddSingleton<IApiService, MockApiService>();
+#else
             services.AddSingleton<IApiService, ApiService>();
+#endif
 
             services.AddSingleton<SettingsViewModel>();
             services.AddSingleton<MainPageViewModel>();

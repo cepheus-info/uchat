@@ -18,8 +18,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="2*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <!--<RowDefinition Height="*"/>-->
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Chat message list -->
@@ -43,18 +43,47 @@
 
         <!-- User input area -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
-            <Image Width="180" Height="100" Source="{Binding RecordingStatusText}" HorizontalAlignment="Stretch"></Image>
+            <Image Width="180" Height="100" Source="ms-appx:///Assets/ReleaseToSend.png" Visibility="{Binding IsReleaseToSendVisible, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Stretch"></Image>
         </StackPanel>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
+            <!--<Grid Grid.Column="0" HorizontalAlignment="Right">
+                <Button CornerRadius="50" Width="100" Height="100" Background="Transparent" BorderThickness="1" x:Name="CancelButton" Visibility="{Binding IsRecording, Converter={StaticResource BoolToVis}}">
+                    <Image Width="60" Height="60" Source="ms-appx:///Assets/CancelButton.png"></Image>
+                </Button>
+                <Image Width="100" Height="100" Source="ms-appx:///Assets/ReleaseToCancel.png" Visibility="{Binding IsReleaseToCancelVisible, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>-->
+
+            <Grid Grid.Column="0" HorizontalAlignment="Right" Width="200" Height="150">
+                <!-- Adjusted Grid to include rows for positioning -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <!-- For the popover image -->
+                    <RowDefinition Height="*"/>
+                    <!-- For the CancelButton -->
+                </Grid.RowDefinitions>
+
+                <!-- ReleaseToCancel Image positioned above the CancelButton -->
+                <Image Grid.Row="0" Width="150" Source="ms-appx:///Assets/ReleaseToCancel.png" 
+           Visibility="{Binding IsReleaseToCancelVisible, Converter={StaticResource BoolToVis}}" 
+           HorizontalAlignment="Center" Margin="0,0,0,0"/>
+                <!-- Adjust margin as needed -->
+
+                <!-- CancelButton -->
+                <Button HorizontalAlignment="Center" Grid.Row="1" CornerRadius="50" Width="100" Height="100" Background="Transparent" BorderThickness="1" 
+            x:Name="CancelButton" Visibility="{Binding IsRecording, Converter={StaticResource BoolToVis}}">
+                    <Image Width="60" Height="60" Source="ms-appx:///Assets/CancelButton.png"></Image>
+                </Button>
+            </Grid>
+
             <!-- CancelButton with fixed position -->
-            <Button Grid.Column="0" HorizontalAlignment="Right" CornerRadius="50" Width="100" Height="100" Background="Transparent" BorderThickness="1" x:Name="CancelButton" Visibility="{Binding IsRecording, Converter={StaticResource BoolToVis}}">
+            <!--<Button Grid.Column="0" HorizontalAlignment="Right" CornerRadius="50" Width="100" Height="100" Background="Transparent" BorderThickness="1" x:Name="CancelButton" Visibility="{Binding IsRecording, Converter={StaticResource BoolToVis}}">
                 <Image Width="60" Height="60" Source="ms-appx:///Assets/CancelButton.png"></Image>
-            </Button>
+            </Button>-->
             <Border Grid.Column="1" HorizontalAlignment="Center" x:Name="RecordBorder" Background="Transparent" 
                     PointerPressed="Border_PointerPressed" 
                     PointerReleased="Border_PointerReleased" 
@@ -66,10 +95,19 @@
                     BorderThickness="0">
                 <Grid>
                     <!-- Background Image that appears when button is pressed -->
-                    <Image x:Name="PressedBackgroundImage" Source="ms-appx:///Assets/RecordButtonRecordingBackground.png" Visibility="{Binding IsRecording, Converter={StaticResource BoolToVis}}" />
-                    <Image Width="100" Height="100" Source="{Binding RecordButtonImage}" />
+                    <Image Height="150" x:Name="PressedBackgroundImage" Source="ms-appx:///Assets/RecordButtonRecordingBackground.png" Visibility="{Binding IsRecording, Converter={StaticResource BoolToVis}}" />
+                    <Image Margin="0, 25" Width="100" Height="100" Source="{Binding RecordButtonImage}" />
                 </Grid>
             </Border>
+        </Grid>
+        <Grid Grid.Row="3" VerticalAlignment="Bottom" Margin="0, 5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Image Source="ms-appx:///Assets/LeftFooter.png" Grid.Column="0" Height="20" HorizontalAlignment="Left"/>
+            <Image Source="ms-appx:///Assets/PressToRecord.png" Grid.Column="1" Width="100" HorizontalAlignment="Center" Visibility="{Binding IsNotRecording, Converter={StaticResource BoolToVis}}" />
         </Grid>
 
         <!-- Operation history list -->
