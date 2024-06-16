@@ -13,7 +13,7 @@ namespace UChat.Services.Implementations
             await Task.Delay(1000);
 
             // Return a predefined response or simulate based on input parameters
-            return $"User said hello via {name}; UChat replied sorry I am a bot";
+            return $"User said hello via {name}; UChat replied sorry I am a bot, however, we have a long story to tell. Imagine we are in the same paragraph, the rabbit hole is just like the same thing.";
         }
     }
 }

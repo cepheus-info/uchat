@@ -13,6 +13,7 @@
     <Page.Resources>
         <local:SenderToColorConverter x:Key="SenderToColorConverter"/>
         <local:BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <local:SenderToHorizontalAlignmentConverter x:Key="SenderToHorizontalAlignmentConverter"/>
     </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -24,7 +25,7 @@
 
         <!-- Chat message list -->
         <ScrollViewer Grid.Row="0">
-            <ListView x:Name="MessageList" ItemsSource="{Binding Messages}">
+            <!--<ListView x:Name="MessageList" ItemsSource="{Binding Messages}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Background="{Binding Sender, Converter={StaticResource SenderToColorConverter}}">
@@ -38,7 +39,27 @@
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
+            </ListView>-->
+            <ListView x:Name="MessageList" ItemsSource="{Binding Messages}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid MaxWidth="400" HorizontalAlignment="{Binding Sender, Converter={StaticResource SenderToHorizontalAlignmentConverter}}">
+                            <Border Background="{Binding Sender, Converter={StaticResource SenderToColorConverter}}" 
+                        CornerRadius="12" Padding="10" Margin="5">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Content}" TextWrapping="WrapWholeWords" Foreground="Black"/>
+                                    <!-- Optionally, add the button and progress bar here if needed -->
+                                    <Button Width="30" Height="30" Padding="0" Margin="0" CornerRadius="15" HorizontalAlignment="Right" Content="{Binding IsPlayingButtonText}"
+                                        Command="{Binding DataContext.PlayAudioCommand, ElementName=UMainPage}"
+                                        CommandParameter="{Binding}"
+                                        Tag="{Binding}"></Button>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
             </ListView>
+
         </ScrollViewer>
 
         <!-- User input area -->
