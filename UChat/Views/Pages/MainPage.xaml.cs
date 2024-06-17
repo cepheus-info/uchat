@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -7,8 +8,10 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.UI.Xaml.Shapes;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -40,12 +43,16 @@ namespace UChat
         private Lazy<MainPageViewModel> LazyMainPageViewModel { get; } = new Lazy<MainPageViewModel>(() => App.ServiceProvider.GetRequiredService<MainPageViewModel>());
         public MainPageViewModel MainPageViewModel { get { return LazyMainPageViewModel.Value; } }
 
+        private Canvas WaveformCanvas => MainPageViewModel.IsReleaseToSendVisible ? SendCanvas : CancelCanvas;
+
         public MainPage()
         {
             this.InitializeComponent();
             this.NavigationCacheMode = NavigationCacheMode.Enabled;
 
             this.DataContext = MainPageViewModel;
+
+            MainPageViewModel.WaveformPoints.CollectionChanged += WaveformPoints_CollectionChanged;
         }
 
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
@@ -107,5 +114,48 @@ namespace UChat
             /* Determine if in cancel area */
             MainPageViewModel.IsCancelAction = cancelBtnRect.Contains(position);
         }
+
+        private void WaveformPoints_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    // Handle added items
+                    foreach (var newItem in e.NewItems)
+                    {
+                        var point = (WaveformPoint)newItem; // Assuming WaveformPoint is your data type
+                        AddWaveformPointToCanvas(point);
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    // Handle removed items
+                    // This requires tracking which UI elements correspond to which data items
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    // Handle replaced items
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    // Handle moved items
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    // Handle the collection being cleared
+                    WaveformCanvas.Children.Clear();
+                    break;
+            }
+        }
+
+        private void AddWaveformPointToCanvas(WaveformPoint point)
+        {
+            Rectangle rect = new Rectangle
+            {
+                Width = 2,
+                Height = point.Height,
+                Fill = new SolidColorBrush(Colors.Black)
+            };
+            Canvas.SetLeft(rect, point.CanvasLeft);
+            Canvas.SetTop(rect, point.CanvasTop);
+            WaveformCanvas.Children.Add(rect);
+        }
+
     }
 }

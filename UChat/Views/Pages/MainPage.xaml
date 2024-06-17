@@ -49,23 +49,12 @@
         </ScrollViewer>
 
         <!-- User input area -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
-            <Image Width="180" Height="100" Source="ms-appx:///Assets/ReleaseToSend.png" Visibility="{Binding IsReleaseToSendVisible, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Stretch"/>
-            <ItemsControl ItemsSource="{Binding WaveformPoints}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <Canvas Width="400" Height="100"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Rectangle Width="1" Fill="Green" 
-                       Height="{Binding Height}" 
-                       Canvas.Left="{Binding CanvasLeft}"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
+        <Border Width="400" Height="100" Grid.Row="1" Background="Transparent" HorizontalAlignment="Center">
+            <Grid>
+                <Image Width="400" Height="100" Source="ms-appx:///Assets/ReleaseToSend.png" Visibility="{Binding IsReleaseToSendVisible, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Stretch"/>
+                <Canvas x:Name="SendCanvas" Width="400" Height="100" Background="Transparent" Visibility="{Binding IsReleaseToSendVisible, Converter={StaticResource BoolToVis}}" />
+            </Grid>
+        </Border>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -88,10 +77,13 @@
                     <!-- For the CancelButton -->
                 </Grid.RowDefinitions>
 
-                <!-- ReleaseToCancel Image positioned above the CancelButton -->
-                <Image Grid.Row="0" Width="150" Source="ms-appx:///Assets/ReleaseToCancel.png" 
-           Visibility="{Binding IsReleaseToCancelVisible, Converter={StaticResource BoolToVis}}" 
-           HorizontalAlignment="Center" Margin="0,0,0,0"/>
+                <Border Width="150" Height="100" Grid.Row="0" Background="Transparent" HorizontalAlignment="Center">
+                    <Grid>
+                        <!-- ReleaseToCancel Image positioned above the CancelButton -->
+                        <Image Width="150" Height="100" Source="ms-appx:///Assets/ReleaseToCancel.png" Visibility="{Binding IsReleaseToCancelVisible, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Center" Margin="0,0,0,0"/>
+                        <Canvas x:Name="CancelCanvas" Width="150" Height="100" Background="Transparent" Visibility="{Binding IsReleaseToCancelVisible, Converter={StaticResource BoolToVis}}" />
+                    </Grid>
+                </Border>
                 <!-- Adjust margin as needed -->
 
                 <!-- CancelButton -->

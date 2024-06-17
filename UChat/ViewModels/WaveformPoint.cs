@@ -10,11 +10,13 @@ namespace UChat.ViewModels
     {
         public double Height { get; set; }
         public double CanvasLeft { get; set; }
+        public double CanvasTop { get; set; }
 
-        public WaveformPoint(double height, double canvasLeft)
+        public WaveformPoint(double height, double canvasLeft, double canvasTop)
         {
             Height = height;
             CanvasLeft = canvasLeft;
+            CanvasTop = canvasTop;
         }
     }
 }

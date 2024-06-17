@@ -15,6 +15,10 @@ using Windows.Media;
 using Windows.Storage.Streams;
 using WinRT;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.Foundation;
+using MathNet.Numerics.IntegralTransforms;
+using System.Numerics;
+using Windows.Media.MediaProperties;
 
 namespace UChat.Services.Implementations
 {
@@ -26,16 +30,37 @@ namespace UChat.Services.Implementations
 
         public StorageFile RecordingFile { get; private set; }
 
-        // Observable stream for audio data
-        private Subject<float[]> _audioDataStream = new();
+        #region AudioFrame
+        private Subject<AudioFrame> _audioFrameStream = new Subject<AudioFrame>();
+        private IObservable<AudioFrame> _throttledAudioFrameStream;
+        #endregion
 
+        #region Observable stream for audio data
+        private Subject<float[]> _audioDataStream = new();
         public IObservable<float[]> AudioDataStream => _audioDataStream.AsObservable();
+        #endregion
 
         public async Task InitializeRecordingAsync(string filename)
         {
-            RecordingFile = await ApplicationData.Current.LocalFolder.CreateFileAsync(filename, CreationCollisionOption.GenerateUniqueName);
+            #region AudioFrame stream
+            // Throttle the stream to process an audio frame every 100 milliseconds, for example
+            _throttledAudioFrameStream = _audioFrameStream.Sample(TimeSpan.FromMilliseconds(100));
 
-            var audioGraphSettings = new AudioGraphSettings(Windows.Media.Render.AudioRenderCategory.Media);
+            _throttledAudioFrameStream.Subscribe(async frame =>
+            {
+                float[] audioData = ExtractAudioData(frame);
+                float[] frequencyData = await PerformFFTAsync(audioData);
+                _audioDataStream.OnNext(frequencyData);
+            });
+            #endregion
+
+            RecordingFile = await ApplicationData.Current.LocalFolder.CreateFileAsync(filename, CreationCollisionOption.GenerateUniqueName);
+            var audioGraphSettings = new AudioGraphSettings(Windows.Media.Render.AudioRenderCategory.Media)
+            {
+                EncodingProperties = AudioEncodingProperties.CreatePcm(44100, 1, 16), // 48 kHz, stereo, 16-bit PCM
+                QuantumSizeSelectionMode = QuantumSizeSelectionMode.LowestLatency, // Performances vs. latency trade-off
+                DesiredSamplesPerQuantum = 480 // Example value, adjust based on your needs
+            };
             var createGraphResult = await AudioGraph.CreateAsync(audioGraphSettings);
 
             if (createGraphResult.Status != AudioGraphCreationStatus.Success)
@@ -74,7 +99,7 @@ namespace UChat.Services.Implementations
             _frameOutputNode = _audioGraph.CreateFrameOutputNode();
 
             var deviceInputNode = deviceInputNodeResult.DeviceInputNode;
-            //deviceInputNode.AddOutgoingConnection(_fileOutputNode);
+            deviceInputNode.AddOutgoingConnection(_fileOutputNode);
             deviceInputNode.AddOutgoingConnection(_frameOutputNode);
 
             // Listen to the QuantumStarted event
@@ -118,34 +143,26 @@ namespace UChat.Services.Implementations
 
         private void AudioGraph_QuantumStarted(AudioGraph sender, object args)
         {
-            // Process audio data on each quantum
             AudioFrame frame = _frameOutputNode.GetFrame();
-            ProcessAudioData(frame);
-        }
-
-        // Method to process and publish audio data
-        private void ProcessAudioData(AudioFrame frame)
-        {
-            // Process the frame to extract audio data (e.g., for visualization)
-            // This is a simplified example. Actual implementation will depend on your audio processing logic.
-            float[] audioData = ExtractAudioData(frame);
-            _audioDataStream.OnNext(audioData);
+            _audioFrameStream.OnNext(frame);
         }
 
         private float[] ExtractAudioData(AudioFrame frame)
         {
             using (AudioBuffer buffer = frame.LockBuffer(AudioBufferAccessMode.Read))
+            using (IMemoryBufferReference reference = buffer.CreateReference())
             {
-                // Access the underlying IBuffer of the AudioBuffer
-                IBuffer ibuffer = Windows.Storage.Streams.Buffer.CreateCopyFromMemoryBuffer(buffer);
-                if (ibuffer == null) return new float[0]; // or handle this scenario appropriately
-                using (var reader = Windows.Storage.Streams.DataReader.FromBuffer(ibuffer))
+                // Cast the IMemoryBufferReference to IMemoryBufferByteAccess using As<T>
+                var byteAccess = reference.As<IMemoryBufferByteAccess>();
+
+                unsafe
                 {
-                    byte[] dataInBytes = new byte[reader.UnconsumedBufferLength];
-                    reader.ReadBytes(dataInBytes);
+                    byte* dataInBytes;
+                    uint capacity;
+                    byteAccess.GetBuffer(out dataInBytes, out capacity);
 
                     // Assuming 16-bit PCM audio
-                    int sampleCount = dataInBytes.Length / 2; // 2 bytes per sample for 16-bit audio
+                    int sampleCount = (int)capacity / 2; // 2 bytes per sample for 16-bit audio
                     float[] audioData = new float[sampleCount];
 
                     for (int i = 0; i < sampleCount; i++)
@@ -159,6 +176,30 @@ namespace UChat.Services.Implementations
                     return audioData;
                 }
             }
+        }
+
+        public async Task<float[]> PerformFFTAsync(float[] audioData)
+        {
+            return await Task.Run(() =>
+            {
+                // Ensure the number of samples is a power of two for FFT
+                int n = audioData.Length;
+                Complex[] complexSamples = new Complex[n];
+
+                // Convert audio samples to complex numbers (real part is the sample, imaginary part is 0)
+                for (int i = 0; i < n; i++)
+                {
+                    complexSamples[i] = new Complex(audioData[i], 0);
+                }
+
+                // Apply FFT
+                Fourier.Forward(complexSamples, FourierOptions.Matlab);
+
+                // Extract frequency magnitudes
+                float[] magnitudes = complexSamples.Select(c => (float)c.Magnitude).ToArray();
+
+                return magnitudes;
+            });
         }
 
     }

@@ -109,6 +109,8 @@ namespace UChat.ViewModels
         /// </summary>
         public bool IsReleaseToCancelVisible => IsRecording && IsCancelAction;
 
+        public double CanvasWidth => IsReleaseToSendVisible ? 400.0 : 150.0;
+
         /// <summary>
         /// Gets the image for the record button
         /// </summary>
@@ -246,7 +248,7 @@ namespace UChat.ViewModels
             // Clear the existing points
             WaveformPoints.Clear();
 
-            int targetPointCount = 50;
+            int targetPointCount = (int)Math.Ceiling(CanvasWidth / 4);
             // Calculate the number of audio samples to group together for each point
             int sampleInterval = (int)Math.Ceiling((double)audioData.Length / targetPointCount);
 
@@ -269,9 +271,11 @@ namespace UChat.ViewModels
 
                 // Normalize the sample value to fit the visualization range
                 double normalizedSample = (sampleValue / maxSampleValue) * 100;
+                double canvasLeft = i * (CanvasWidth / targetPointCount) + 2; // Add offset for the border
+                double canvasTop = (100 - normalizedSample) / 2;
 
                 // Add the normalized sample to the collection
-                WaveformPoints.Add(new WaveformPoint(normalizedSample, i * (100.0 / targetPointCount)));
+                WaveformPoints.Add(new WaveformPoint(normalizedSample, canvasLeft, canvasTop));
             }
         }
 
