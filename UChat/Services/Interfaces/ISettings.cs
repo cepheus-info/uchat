@@ -17,5 +17,7 @@ namespace UChat.Services.Interfaces
         string TextToSpeechImplementation { get; set; }
 
         string HttpClientName { get; }
+
+        bool IsDebugMode { get; set; }
     }
 }

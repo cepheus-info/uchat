@@ -1,4 +1,7 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -10,7 +13,7 @@ using Windows.Storage;
 
 namespace UChat.ViewModels
 {
-    public class SettingsViewModel : INotifyPropertyChanged
+    public class SettingsViewModel : ObservableRecipient
     {
         private readonly ISettings _settings;
 
@@ -40,6 +43,23 @@ namespace UChat.ViewModels
             }
         }
 
+        public bool IsDebugMode
+        {
+            get => _settings.IsDebugMode;
+            set
+            {
+                var propertyChangedMessage = new PropertyChangedMessage<bool>(
+                    this,
+                    nameof(IsDebugMode),
+                    _settings.IsDebugMode,
+                    value
+                );
+                _settings.IsDebugMode = value;
+                OnPropertyChanged(nameof(IsDebugMode));
+                Messenger.Send(propertyChangedMessage);
+            }
+        }
+
         public string TextToSpeechImplementation
         {
             get => _settings.TextToSpeechImplementation;
@@ -61,15 +81,6 @@ namespace UChat.ViewModels
             }
         }
 
-        public string TimeoutDescription
-        {
-            get => $"Timeout Value: {Timeout}s";
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+        public string TimeoutDescription => $"Timeout Value: {Timeout}s";
     }
 }

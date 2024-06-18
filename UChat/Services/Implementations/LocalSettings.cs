@@ -36,5 +36,11 @@ namespace UChat.Services.Implementations
         }
 
         public string HttpClientName { get => AcceptInsecureConnection ? "InsecureHttpClient" : "SecureHttpClient"; }
+
+        public bool IsDebugMode
+        {
+            get => (bool?)ApplicationData.Current.LocalSettings.Values["IsDebugMode"] ?? false;
+            set => ApplicationData.Current.LocalSettings.Values["IsDebugMode"] = value;
+        }
     }
 }

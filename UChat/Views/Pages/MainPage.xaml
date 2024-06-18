@@ -18,7 +18,8 @@
     </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="2*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -124,11 +125,11 @@
         </Grid>
 
         <!-- Operation history list -->
-        <ScrollViewer Grid.Row="3" MaxWidth="600" Visibility="Collapsed">
+        <ScrollViewer Grid.Row="4" MaxWidth="600" Visibility="{Binding IsDebugMode, Converter={StaticResource BoolToVis}}">
             <ListView ItemsSource="{Binding OperationHistory}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding}" TextWrapping="Wrap" IsTextSelectionEnabled="True"></TextBlock>
+                        <TextBlock Text="{Binding}" Foreground="AntiqueWhite" TextWrapping="Wrap" IsTextSelectionEnabled="True"></TextBlock>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>

@@ -1,29 +1,40 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using UChat.Services.Interfaces;
-using UChat.Models;
-using Windows.Storage;
-using Windows.Storage.Streams;
-using UChat.Services;
 using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using UChat.Models;
+using UChat.Services;
+using UChat.Services.Interfaces;
+using Windows.Storage;
 
 namespace UChat.ViewModels
 {
     /// <summary>
     /// ViewModel for the MainPage. It handles the business logic for recording and sending audio messages.
     /// </summary>
-    public class MainPageViewModel : INotifyPropertyChanged
+    public class MainPageViewModel : ObservableRecipient
     {
+        #region IsDebugMode
+        private bool _isDebugMode;
+        public bool IsDebugMode
+        {
+            get => _isDebugMode;
+            private set
+            {
+                _isDebugMode = value;
+                OnPropertyChanged(nameof(IsDebugMode));
+            }
+        }
+        #endregion
+
         #region bool IsRecordingAvailable
         private bool _isRecordedFileAvailable = false;
         /// <summary>
@@ -40,7 +51,6 @@ namespace UChat.ViewModels
             }
         }
         #endregion
-
 
         #region bool IsRecording
         private bool _isRecording = false;
@@ -193,6 +203,10 @@ namespace UChat.ViewModels
             _settings = settings;
             _recordingService = recordingService;
 
+            IsDebugMode = _settings.IsDebugMode;
+            // Subscribe to the PropertyChangedMessage<bool> to update the IsDebugMode property
+            Messenger.Register<PropertyChangedMessage<bool>>(this, (r, m) => IsDebugMode = m.NewValue);
+
             #region StartRecordingCommand
             StartRecordingCommand = new AsyncRelayCommand(async () => await StartRecordingAsync());
             #endregion
@@ -279,7 +293,6 @@ namespace UChat.ViewModels
             }
         }
 
-
         private async Task StopRecordingAsync()
         {
             await _recordingService.StopRecordingAsync();
@@ -307,6 +320,9 @@ namespace UChat.ViewModels
             IsRecording = false;
             IsRecordedFileAvailable = false;
             IsCancelAction = false;
+
+            // Dispose of the subscription when recording stops
+            _audioDataStreamSubscription?.Dispose();
         }
 
         /// <summary>
@@ -344,7 +360,7 @@ namespace UChat.ViewModels
             return await _apiService.SendRequestAsync(buffer, audioMessage.Audio.Name);
         }
 
-        private List<Message> ParseResponse(string responseString)
+        private static List<Message> ParseResponse(string responseString)
         {
             var parts = responseString.Split(';');
             return new List<Message>
@@ -400,17 +416,6 @@ namespace UChat.ViewModels
                     message.IsPlaying = false;
                 }
             }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Raises the PropertyChanged event.
-        /// </summary>
-        /// <param name="propertyName">The name of the property that changed.</param>
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

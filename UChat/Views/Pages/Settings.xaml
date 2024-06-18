@@ -10,13 +10,17 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel>
+        <TextBlock Text="DEBUG Mode"/>
+        <ToggleSwitch IsOn="{Binding IsDebugMode, Mode=TwoWay}"/>
+
         <TextBlock Text="API URL"/>
         <TextBox Text="{Binding ApiUrl, Mode=TwoWay}" PlaceholderText="https://ipaddress:port/path/to/api"/>
 
         <TextBlock Text="Accept Insecure Connection"/>
         <ToggleSwitch IsOn="{Binding AcceptInsecureConnection, Mode=TwoWay}"/>
 
-        <ComboBox SelectedItem="{Binding TextToSpeechImplementation, Mode=TwoWay}">
+        <TextBlock Text="TTS Option"/>
+        <ComboBox SelectedValue="{Binding TextToSpeechImplementation, Mode=TwoWay}" SelectedValuePath="Content">
             <ComboBoxItem Content="LocalTTS"/>
             <ComboBoxItem Content="OpenTTS"/>
         </ComboBox>

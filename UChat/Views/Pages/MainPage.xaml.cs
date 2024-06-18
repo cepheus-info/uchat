@@ -60,36 +60,28 @@ namespace UChat
             base.OnNavigatingFrom(e);
         }
 
-        private void Border_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private async void Border_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             // Capture the pointer to ensure you continue receiving pointer events even if the pointer moves outside the Border
             (sender as UIElement)?.CapturePointer(e.Pointer);
             MainPageViewModel.IsCancelAction = false; // Reset the flag
             // Start recording action
-            var dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-            dispatcherQueue.TryEnqueue(async () =>
-            {
-                await MainPageViewModel.StartRecordingCommand.ExecuteAsync(null);
-            });
+            await MainPageViewModel.StartRecordingCommand.ExecuteAsync(null);
         }
 
-        private void Border_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private async void Border_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             (sender as UIElement)?.ReleasePointerCapture(e.Pointer);
-            var dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-            dispatcherQueue.TryEnqueue(async () =>
+            if (MainPageViewModel.IsCancelAction)
             {
-                if (MainPageViewModel.IsCancelAction)
-                {
-                    // Cancel recording action
-                    await MainPageViewModel.CancelRecordingCommand.ExecuteAsync(null);
-                }
-                else
-                {
-                    await MainPageViewModel.StopRecordingCommand.ExecuteAsync(null);
-                    await MainPageViewModel.SendCommand.ExecuteAsync(null);
-                }
-            });
+                // Cancel recording action
+                await MainPageViewModel.CancelRecordingCommand.ExecuteAsync(null);
+            }
+            else
+            {
+                await MainPageViewModel.StopRecordingCommand.ExecuteAsync(null);
+                await MainPageViewModel.SendCommand.ExecuteAsync(null);
+            }
         }
 
         private void Border_PointerExited(object sender, PointerRoutedEventArgs e)
@@ -117,31 +109,35 @@ namespace UChat
 
         private void WaveformPoints_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            switch (e.Action)
+            var dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+            dispatcherQueue.TryEnqueue(() =>
             {
-                case NotifyCollectionChangedAction.Add:
-                    // Handle added items
-                    foreach (var newItem in e.NewItems)
-                    {
-                        var point = (WaveformPoint)newItem; // Assuming WaveformPoint is your data type
-                        AddWaveformPointToCanvas(point);
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    // Handle removed items
-                    // This requires tracking which UI elements correspond to which data items
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    // Handle replaced items
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    // Handle moved items
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    // Handle the collection being cleared
-                    WaveformCanvas.Children.Clear();
-                    break;
-            }
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        // Handle added items
+                        foreach (var newItem in e.NewItems)
+                        {
+                            var point = (WaveformPoint)newItem; // Assuming WaveformPoint is your data type
+                            AddWaveformPointToCanvas(point);
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        // Handle removed items
+                        // This requires tracking which UI elements correspond to which data items
+                        break;
+                    case NotifyCollectionChangedAction.Replace:
+                        // Handle replaced items
+                        break;
+                    case NotifyCollectionChangedAction.Move:
+                        // Handle moved items
+                        break;
+                    case NotifyCollectionChangedAction.Reset:
+                        // Handle the collection being cleared
+                        WaveformCanvas.Children.Clear();
+                        break;
+                }
+            });
         }
 
         private void AddWaveformPointToCanvas(WaveformPoint point)
