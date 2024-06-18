@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -14,6 +15,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices.WindowsRuntime;
+using UChat.Models;
 using UChat.Services;
 using UChat.Services.Implementations;
 using UChat.Services.Interfaces;
@@ -60,6 +62,14 @@ namespace UChat
             //throw e.Exception;
             e.Handled = true;
             System.Diagnostics.Debug.WriteLine(e.Exception, "Error");
+            try
+            {
+                WeakReferenceMessenger.Default.Send(new ExceptionMessage(DateTime.Now, e.Message));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex, "Error");
+            }
         }
 
         /// <summary>

@@ -24,7 +24,7 @@
 
         <CommandBar Grid.Row="0" Background="{StaticResource TopBarBackground}" HorizontalAlignment="Stretch" VerticalAlignment="Center">
             <CommandBar.Content>
-                <TextBlock Margin="530, 10" Text="联合电子智能语音助手" Foreground="GhostWhite" FontWeight="Black" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <TextBlock Text="联合电子智能语音助手" Foreground="GhostWhite" FontWeight="Black" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </CommandBar.Content>
             <AppBarButton Icon="Setting" Label="Settings" Click="SettingsButton_Click"/>
         </CommandBar>

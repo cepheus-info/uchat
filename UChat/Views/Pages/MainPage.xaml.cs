@@ -1,34 +1,15 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text.Json;
-using System.Threading.Tasks;
 using UChat.ViewModels;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.Media.Capture;
-using Windows.Media.Core;
-using Windows.Media.MediaProperties;
-using Windows.Media.Playback;
-using Windows.Media.SpeechSynthesis;
-using Windows.Storage;
-using Windows.Storage.Streams;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -153,5 +134,9 @@ namespace UChat
             WaveformCanvas.Children.Add(rect);
         }
 
+        private void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+        {
+            MainPageViewModel.OperationHistory.Clear();
+        }
     }
 }

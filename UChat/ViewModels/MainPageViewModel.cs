@@ -139,13 +139,13 @@ namespace UChat.ViewModels
         }
         #endregion
 
-        #region ObservableCollection<string> OperationHistory
-        private ObservableCollection<string> _operationHistory = new ObservableCollection<string>();
+        #region ObservableCollection<Operation> OperationHistory
+        private ObservableCollection<Operation> _operationHistory = new();
 
         /// <summary>
         /// Gets or sets the operation history.
         /// </summary>
-        public ObservableCollection<string> OperationHistory
+        public ObservableCollection<Operation> OperationHistory
         {
             get => this._operationHistory;
             set
@@ -153,6 +153,24 @@ namespace UChat.ViewModels
                 this._operationHistory = value;
                 OnPropertyChanged();
             }
+        }
+        #endregion
+
+        #region DebugMessages
+        private string _debugMessages;
+        public string DebugMessages
+        {
+            get => _debugMessages;
+            set
+            {
+                _debugMessages = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private void OperationHistory_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            DebugMessages = string.Join(Environment.NewLine, OperationHistory.Select(op => $"{op.TimeStamp} {op.Description}"));
         }
         #endregion
 
@@ -204,8 +222,15 @@ namespace UChat.ViewModels
             _recordingService = recordingService;
 
             IsDebugMode = _settings.IsDebugMode;
+            OperationHistory.CollectionChanged += OperationHistory_CollectionChanged;
             // Subscribe to the PropertyChangedMessage<bool> to update the IsDebugMode property
             Messenger.Register<PropertyChangedMessage<bool>>(this, (r, m) => IsDebugMode = m.NewValue);
+
+            // Subscribe to the Unhandled ExceptionMessage to log the exception
+            Messenger.Register<ExceptionMessage>(this, (r, m) =>
+            {
+                OperationHistory.Add(new Operation(m.TimeStamp, m.Message));
+            });
 
             #region StartRecordingCommand
             StartRecordingCommand = new AsyncRelayCommand(async () => await StartRecordingAsync());
@@ -245,7 +270,7 @@ namespace UChat.ViewModels
                 });
             #endregion
 
-            OperationHistory.Add("Starting recording...");
+            OperationHistory.Add(new Operation(DateTime.Now, "Starting recording..."));
             await _recordingService.InitializeRecordingAsync("Recording.mp3");
             await _recordingService.StartRecordingAsync();
             IsRecording = true;
@@ -253,7 +278,7 @@ namespace UChat.ViewModels
 
         private void VisualizeAudioData(float[] audioData)
         {
-            if(audioData.Length == 0)
+            if (audioData.Length == 0)
             {
                 return;
             }
@@ -297,7 +322,12 @@ namespace UChat.ViewModels
         {
             await _recordingService.StopRecordingAsync();
             var duration = await _recordingService.GetRecordingDurationAsync();
-            OperationHistory.Add($"You have recorded a {duration.TotalSeconds}s message at {_recordingService.RecordingFile?.Path}");
+            var durationText = duration.TotalSeconds > 0 ? $"{duration.TotalSeconds}s " : "";
+            OperationHistory.Add(new Operation
+            {
+                TimeStamp = DateTime.Now,
+                Description = $"You have recorded a {durationText}message at {_recordingService.RecordingFile?.Path}"
+            });
             Messages.Add(new Message
             {
                 Sender = "[Me]",
@@ -314,7 +344,7 @@ namespace UChat.ViewModels
 
         private async Task CancelRecordingAsync()
         {
-            OperationHistory.Add("Cancel recording.");
+            OperationHistory.Add(new Operation(DateTime.Now, "Cancel recording."));
             await _recordingService.StopRecordingAsync();
             await _recordingService.RecordingFile?.DeleteAsync();
             IsRecording = false;
@@ -331,14 +361,14 @@ namespace UChat.ViewModels
         /// <returns></returns>
         public async Task SendMessageAsync()
         {
-            OperationHistory.Add("Sending message...");
+            OperationHistory.Add(new Operation(DateTime.Now, "Sending message..."));
 
             try
             {
                 IsRecordedFileAvailable = false;
                 var audioMessage = Messages.Last();
                 var responseString = await SendAudioAsync(audioMessage);
-                OperationHistory.Add($"Received Message: {responseString}");
+                OperationHistory.Add(new Operation(DateTime.Now, $"Received Message: {responseString}"));
 
                 var responseMessages = ParseResponse(responseString);
 
@@ -349,7 +379,7 @@ namespace UChat.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.ToString());
-                OperationHistory.Add(ex.ToString());
+                OperationHistory.Add(new Operation(DateTime.Now, ex.ToString()));
                 IsRecordedFileAvailable = true;
             }
         }

@@ -66,7 +66,11 @@ namespace UChat
             {
                 UpdateAcceptInsecureConnection();
                 var mainPageViewModel = App.ServiceProvider.GetRequiredService<MainPageViewModel>();
-                mainPageViewModel.OperationHistory.Add($"Accept Insecure Connection: {SettingsViewModel.AcceptInsecureConnection}");
+                mainPageViewModel.OperationHistory.Add(new Operation
+                {
+                    TimeStamp = DateTime.Now,
+                    Description = $"Accept Insecure Connection: {SettingsViewModel.AcceptInsecureConnection}"
+                });
             }
         }
 

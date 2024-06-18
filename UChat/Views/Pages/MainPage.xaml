@@ -125,7 +125,7 @@
         </Grid>
 
         <!-- Operation history list -->
-        <ScrollViewer Grid.Row="4" MaxWidth="600" Visibility="{Binding IsDebugMode, Converter={StaticResource BoolToVis}}">
+        <!--<ScrollViewer Grid.Row="4" MaxWidth="600" MaxHeight="200" Visibility="{Binding IsDebugMode, Converter={StaticResource BoolToVis}}">
             <ListView ItemsSource="{Binding OperationHistory}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -133,6 +133,19 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+        </ScrollViewer>-->
+        <ScrollViewer Grid.Row="4" MaxHeight="300" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"  Visibility="{Binding IsDebugMode, Converter={StaticResource BoolToVis}}">
+            <TextBox IsReadOnly="True"
+             Text="{Binding DebugMessages}"
+             TextWrapping="Wrap"
+             AcceptsReturn="True"
+             Foreground="Gray">
+                <TextBox.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Clear All" Click="MenuFlyoutItem_Click"/>
+                    </MenuFlyout>
+                </TextBox.ContextFlyout>
+            </TextBox>
         </ScrollViewer>
     </Grid>
 </Page>
