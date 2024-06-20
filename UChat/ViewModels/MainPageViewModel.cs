@@ -209,7 +209,7 @@ namespace UChat.ViewModels
         /// <summary>
         /// Gets the command for playing audio.
         /// </summary>
-        public IAsyncRelayCommand PlayAudioCommand { get; }
+        public IRelayCommand PlayAudioCommand { get; }
 
         public MainPageViewModel(
             ISettings settings,
@@ -251,7 +251,7 @@ namespace UChat.ViewModels
             #endregion
 
             #region PlayAudioCommand
-            PlayAudioCommand = new AsyncRelayCommand<Message>(async (message) => await PlayAudioAsync(message));
+            PlayAudioCommand = new RelayCommand<Message>(async (message) => await PlayAudioAsync(message));
             _audioPlayer = audioPlayer;
             #endregion
         }
