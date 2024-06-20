@@ -8,7 +8,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" d:DataContext="{d:DesignInstance Type=viewModels:MainPageViewModel}"
     mc:Ignorable="d"
-    Background="{StaticResource AppBackground}"
+    Background="Transparent"
     x:Name="UMainPage">
     <Page.Resources>
         <local:SenderToColorConverter x:Key="SenderToColorConverter"/>
@@ -26,7 +26,7 @@
         </Grid.RowDefinitions>
 
         <!-- Chat message list -->
-        <ScrollViewer Grid.Row="0">
+        <ScrollViewer Grid.Row="0" Grid.RowSpan="3" x:Name="MessageListScrollViewer">
             <ListView x:Name="MessageList" ItemsSource="{Binding Messages}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -46,16 +46,16 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-
         </ScrollViewer>
 
         <!-- User input area -->
-        <Border Width="400" Height="100" Grid.Row="1" Background="Transparent" HorizontalAlignment="Center">
+        <Border Grid.Row="1" Width="400" Height="100" Translation="0, 50, 0" Background="Transparent" HorizontalAlignment="Center">
             <Grid>
                 <Image Width="400" Height="100" Source="ms-appx:///Assets/ReleaseToSend.png" Visibility="{Binding IsReleaseToSendVisible, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Stretch"/>
                 <Canvas x:Name="SendCanvas" Width="400" Height="100" Background="Transparent" Visibility="{Binding IsReleaseToSendVisible, Converter={StaticResource BoolToVis}}" />
             </Grid>
         </Border>
+        
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -69,7 +69,7 @@
                 <Image Width="100" Height="100" Source="ms-appx:///Assets/ReleaseToCancel.png" Visibility="{Binding IsReleaseToCancelVisible, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Grid>-->
 
-            <Grid Grid.Column="0" HorizontalAlignment="Right" Width="200" Height="150">
+            <Grid Grid.Column="0" HorizontalAlignment="Right" Width="200" Height="180" Translation="150, -50, 0">
                 <!-- Adjusted Grid to include rows for positioning -->
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -98,7 +98,7 @@
             <!--<Button Grid.Column="0" HorizontalAlignment="Right" CornerRadius="50" Width="100" Height="100" Background="Transparent" BorderThickness="1" x:Name="CancelButton" Visibility="{Binding IsRecording, Converter={StaticResource BoolToVis}}">
                 <Image Width="60" Height="60" Source="ms-appx:///Assets/CancelButton.png"></Image>
             </Button>-->
-            <Border Grid.Column="1" HorizontalAlignment="Center" x:Name="RecordBorder" Background="Transparent" 
+            <Border Grid.Column="1" Translation="0, 50, 0" HorizontalAlignment="Center" x:Name="RecordBorder" Background="Transparent" 
                     PointerPressed="Border_PointerPressed" 
                     PointerReleased="Border_PointerReleased" 
                     PointerExited="Border_PointerExited"
@@ -114,13 +114,14 @@
                 </Grid>
             </Border>
         </Grid>
+        
         <Grid Grid.Row="3" VerticalAlignment="Bottom" Margin="0, 5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Image Source="ms-appx:///Assets/LeftFooter.png" Grid.Column="0" Height="20" HorizontalAlignment="Left"/>
+            <Image Margin="20, 5" Source="ms-appx:///Assets/LeftFooter.png" Grid.Column="0" Height="40" VerticalAlignment="Center" HorizontalAlignment="Left"/>
             <Image Source="ms-appx:///Assets/PressToRecord.png" Grid.Column="1" Width="100" HorizontalAlignment="Center" Visibility="{Binding IsNotRecording, Converter={StaticResource BoolToVis}}" />
         </Grid>
 

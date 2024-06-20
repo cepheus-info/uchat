@@ -22,12 +22,25 @@
             <AppBarButton Icon="Setting" Label="Settings" Click="SettingsButton_Click"/>
         </CommandBar>-->
 
-        <CommandBar Grid.Row="0" Background="{StaticResource TopBarBackground}" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+        <!--<CommandBar Grid.Row="0" Background="{StaticResource TopBarBackground}" Height="100" HorizontalAlignment="Center" VerticalAlignment="Center">
             <CommandBar.Content>
-                <TextBlock Text="联合电子智能语音助手" Foreground="GhostWhite" FontWeight="Black" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Grid Width="1280" Height="100" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="联合电子智能语音助手" Foreground="GhostWhite" FontWeight="Black" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
             </CommandBar.Content>
             <AppBarButton Icon="Setting" Label="Settings" Click="SettingsButton_Click"/>
-        </CommandBar>
+        </CommandBar>-->
+
+        <Grid Grid.Row="0" Background="{StaticResource TopBarBackground}" Height="60">
+            <Grid Width="1280" Height="60" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="联合电子智能语音助手" Foreground="GhostWhite" FontSize="28" FontFamily="SimHei" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
+            <!-- Place settings button or other controls here -->
+            <Button Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Center" Click="SettingsButton_Click">
+                <FontIcon Glyph="&#xE713;" Foreground="Azure"/>
+            </Button>
+        </Grid>
+
 
         <Frame x:Name="ContentFrame" Grid.Row="1"/>
     </Grid>

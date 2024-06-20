@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
 using System;
 using System.Collections.Specialized;
+using System.Threading.Tasks;
 using UChat.ViewModels;
 using Windows.Foundation;
 
@@ -34,6 +35,7 @@ namespace UChat
             this.DataContext = MainPageViewModel;
 
             MainPageViewModel.WaveformPoints.CollectionChanged += WaveformPoints_CollectionChanged;
+            MainPageViewModel.Messages.CollectionChanged += Messages_CollectionChanged;
         }
 
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
@@ -80,7 +82,7 @@ namespace UChat
             // Assuming you have logic here to determine if the pointer is in the cancel area
             // Check if the pointer is within the special area (e.g., over the CancelButton)
             var position = e.GetCurrentPoint(null).Position;
-            
+
             var cancelBtnPosition = CancelButton.TransformToVisual(MainWindow.Instance.Content).TransformPoint(new Point(0, 0));
             var cancelBtnRect = new Rect(cancelBtnPosition, new Size(CancelButton.ActualWidth, CancelButton.ActualHeight));
 
@@ -137,6 +139,26 @@ namespace UChat
         private void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
         {
             MainPageViewModel.OperationHistory.Clear();
+        }
+
+        private void Messages_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            var dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    dispatcherQueue.TryEnqueue(() => ScrollToBottom());
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private async void ScrollToBottom()
+        {
+            await Task.Delay(100);
+            // Assuming 'MessageListScrollViewer' is the x:Name of your ScrollViewer
+            MessageListScrollViewer.ChangeView(null, double.MaxValue, null);
         }
     }
 }
